@@ -1,0 +1,139 @@
+ppgool_ping_path: /usr/bin
+pgpool_if_cmd_path: /usr/bin
+pgpool_arping_path: /usr/sbin
+pgpool_systemctl_path: /usr/bin
+pgpoolkey: 8TcAiFUaHWaDSsvLyfC4
+pgpool_postgresql_version: 15
+# .pcpass file
+pgpool_pcppass_entries:
+  - hostname: postgresql01
+    port: 9898
+    user: pgpool
+    password: txvn69ptgLMqCWRERq7n
+  - hostname: postgresql02
+    port: 9898
+    user: pgpool
+    password: txvn69ptgLMqCWRERq7n
+  - hostname: "{{ pgpool_pcp_socket_dir }}" # allows using -h /var/run/pcp instead of 'localhost'
+    port: 9898
+    user: pgpool
+    password: txvn69ptgLMqCWRERq7n
+  - hostname: 127.0.0.1
+    port: 9898
+    user: pgpool
+    password: txvn69ptgLMqCWRERq7n
+# pool_passwd file
+# playbook doesn't seem to handle scram-sha-256 so we previously generated it with pg_enc
+# pgpool_passwd_users_md5:
+#   - username: foo
+#     password: bar
+# backend settings
+pgpool_backend_servers:
+  - hostname: postgresql01
+    port: 5432
+    weight: 1
+    data_directory: "{{ pgpool_postgresql_data_directory }}"
+    flag: ALLOW_TO_FAILOVER
+    application_name: postgresql01
+  - hostname: postgresql02
+    port: 5432
+    weight: 1
+    data_directory: "{{ pgpool_postgresql_data_directory }}"
+    flag: ALLOW_TO_FAILOVER
+    application_name: postgresql02
+# authentication
+pgpool_enable_pool_hba: on
+pgpool_pool_hba_entries:
+  - type: local
+    database: all
+    user: postgres
+    address:
+    method: trust
+  - type: host
+    database: all
+    user: postgres
+    address: 51.255.159.32/28
+    method: trust
+  - type: host
+    database: k3s_production
+    user: k3s
+    address: 51.255.159.32/28
+    method: scram-sha-256
+  - type: host
+    database: k3s_production
+    user: k3s
+    address: 127.0.0.1/32
+    method: scram-sha-256
+  - type: local
+    database: k3s_production
+    user: k3s
+    address:
+    method: scram-sha-256
+  - type: host
+    database: ds_production
+    user: ds
+    address: 51.255.159.32/28
+    method: scram-sha-256
+  - type: host
+    database: ds_production
+    user: ds
+    address: 127.0.0.1/32
+    method: scram-sha-256
+  - type: local
+    database: ds_production
+    user: ds
+    address:
+    method: scram-sha-256
+# logs
+pgpool_log_hostname: "on"
+pgpool_log_statement: "on"
+pgpool_log_per_node_statement: "on"
+pgpool_log_min_messages: info
+pgpool_syslog_facility: LOCAL1
+# connection_cache
+pgpool_connection_cache: "on"
+# Pool
+pgpool_num_init_children: 32
+pgpool_max_pool: 4
+pgpool_serialize_accept: "off"
+pgpool_child_life_time: 0
+pgpool_child_max_connections: 0
+pgpool_connection_life_time: 0
+pgpool_client_idle_limit: 300
+# load-balancing
+pgpool_load_balance_mode: "on"
+pgpool_disable_load_balance_on_write: "transaction" # one of 'transaction', 'trans_transaction' or 'always'
+pgpool_statement_level_load_balance: "on"
+# running mode
+pgpool_sr_check_user: k3s
+pgpool_sr_check_database: k3s_production
+pgpool_sr_check_password: v9smN3iWpDtwb6eJbBcJ
+pgpool_follow_master_command: "{{ pgpool_home_directory }}/follow_master.sh %d %h %p %D %m %H %M %P %r %R %N %S"
+# HEALTH CHECK GLOBAL PARAMETERS
+pgpool_health_check_period: 10
+pgpool_health_check_timeout: 20
+pgpool_health_check_user: k3s
+pgpool_health_check_database: k3s_production
+pgpool_health_check_password: v9smN3iWpDtwb6eJbBcJ
+pgpool_health_check_max_retries: 3
+pgpool_health_check_retry_delay: 10
+pgpool_connect_timeout: 10000
+# FAILOVER AND FAILBACK
+pgpool_failover_command: "{{ pgpool_home_directory }}/failover.sh %d %h %p %D %m %H %M %P %r %R %N %S"
+pgpool_failover_on_backend_error: "off"
+pgpool_auto_failback: "on"
+# Watchdog
+pgpool_delegate_IP: 51.255.159.40
+pgpool_use_watchdog: "on"
+#pgpool_if_up_cmd: /usr/bin/sudo {{ pgpool_if_cmd_path }}/ip addr add $_IP_$/24 dev eth1 label eth1:0
+#pgpool_if_down_cmd: /usr/bin/sudo {{ pgpool_if_cmd_path }}/ip addr del $_IP_$/24 dev eth1
+#pgpool_arping_cmd: /usr/bin/sudo {{ pgpool_arping_path }}/arping -U $_IP_$ -w 1 -I eth1
+# Online Recovery
+pgpool_recovery_user: postgres
+pgpool_recovery_password: ""
+pgpool_recovery_1st_stage_command: recovery_1st_stage.sh
+pgpool_recovery_2nd_stage_command: ""
+pgpool_recovery_timeout: 90
+pgpool_client_idle_limit_in_recovery: 0
+# master is not a valid option anymore
+# pgpool_relcache_query_target: primary

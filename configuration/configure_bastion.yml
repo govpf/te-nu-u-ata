@@ -1,0 +1,46 @@
+# Can't use rsync with synchronize built in module as hosts can't access each other
+- name: Copy kubeconfig from node to localhost
+  hosts: rancher01
+  tasks:
+    - name: Create temporary file
+      ansible.builtin.tempfile:
+        state: file
+        suffix: .k8s
+      register: kubeconfig
+      delegate_to: localhost
+
+    - name: Print temporary file path
+      ansible.builtin.debug:
+        msg:
+          - "Temp file path {{ kubeconfig.path }}"
+
+    - name: Fetch kubeconfig
+      become: true
+      ansible.builtin.fetch:
+        src: /etc/rancher/k3s/k3s.yaml
+        dest: "{{ kubeconfig.path }}"
+        flat: true
+
+    - name: Replace localhost by hostname
+      ansible.builtin.replace:
+        path: "{{ kubeconfig.path }}"
+        regexp: "127.0.0.1"
+        replace: "{{ inventory_hostname }}"
+      delegate_to: localhost
+
+- name: Copy kubeconfig from localhost to bastion
+  hosts: bastion
+  tasks:
+    - name: Create kube folder
+      ansible.builtin.file:
+        path: /home/idt/.kube/
+        state: directory
+        mode: "0755"
+
+    - name: Copy kubeconfig to bastion
+      ansible.builtin.copy:
+        src: "{{ hostvars.rancher01.kubeconfig.path }}"
+        dest: /home/idt/.kube/config
+        owner: idt
+        group: idt
+        mode: "0600"

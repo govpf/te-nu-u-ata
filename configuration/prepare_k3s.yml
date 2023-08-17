@@ -1,0 +1,19 @@
+- name: Prepare k3s
+  ansible.builtin.import_playbook: mesh.yml
+  vars:
+    hostlist: kubernetes
+
+- name: Install packages
+  hosts: kubernetes
+  tasks:
+    - name: Install base packages
+      become: true
+      ansible.builtin.apt:
+        pkg:
+          - curl
+          - htop
+          - vim
+          - git
+          # rsync used to sync kubeconfig
+          - rsync
+        update_cache: true

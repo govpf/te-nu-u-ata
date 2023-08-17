@@ -1,0 +1,132 @@
+- name: Mesh
+  ansible.builtin.import_playbook: mesh.yml
+  vars:
+    hostlist: bastion
+
+- name: Prepare bastion
+  hosts: bastion
+  vars_files:
+    - vars/bastion.yml
+  tasks:
+    - name: Create config folder
+      ansible.builtin.file:
+        path: /home/idt/.config/rclone
+        state: directory
+        mode: "0755"
+
+    - name: Copy rclone configuration
+      ansible.builtin.copy:
+        src: config/rclone.conf
+        dest: /home/idt/.config/rclone/rclone.conf
+        mode: 0600
+
+    - name: Install base packages
+      become: true
+      ansible.builtin.apt:
+        pkg:
+          - curl
+          - git
+          - htop
+          - python3.11-venv
+          - rclone
+          - screen
+          - vim
+        update_cache: true
+
+    - name: Import google apt gpg key
+      become: true
+      ansible.builtin.apt_key:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        state: present
+
+    - name: Check if gpg helm exists
+      ansible.builtin.stat:
+        path: "{{ helm_gpg_path }}"
+      register: helm_gpg
+
+    - name: Install GPG key for helm
+      become: true
+      ansible.builtin.shell: |
+        set -o pipefail
+        curl https://baltocdn.com/helm/signing.asc | gpg --dearmor > /usr/share/keyrings/helm.gpg
+      when: not helm_gpg.stat.exists
+      args:
+        executable: /bin/bash
+
+    - name: Install helm repo
+      become: true
+      ansible.builtin.apt_repository:
+        repo: deb [arch=amd64 signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main
+        state: present
+        update_cache: true
+
+    - name: Install packages
+      become: true
+      ansible.builtin.apt:
+        pkg:
+          - apt-transport-https
+          - ansible # to use ansible-galaxy
+          - jq
+          - unzip
+          - helm=3.8.2-1 # Kubernetes cluster unreachable: exec plugin: invalid apiVersion "client.authentication.k8s.io/v1alpha1" when using 3.9+
+          - python3-pip
+        update_cache: true
+
+    - name: Install python virtual env
+      ansible.builtin.command: python3 -m venv ansible
+      register: install_virtual_env
+      changed_when: install_virtual_env.rc != 0
+
+    - name: Install kubernetes
+      ansible.builtin.pip:
+        name: kubernetes
+        virtualenv: /home/idt/ansible
+
+    - name: Install helm diff
+      kubernetes.core.helm_plugin:
+        plugin_path: "{{ helm_diff_url }}"
+        state: present
+
+    # Install specific version of kubectl since >= 1.24.0 does’nt work with EKS (same error as for helm)
+    - name: Install kubectl
+      become: true
+      ansible.builtin.get_url:
+        url: https://storage.googleapis.com/kubernetes-release/release/{{ kubectl_version }}/bin/linux/amd64/kubectl
+        dest: /usr/local/bin/kubectl
+        mode: "0755"
+
+    - name: Install kubectx
+      become: true
+      ansible.builtin.unarchive:
+        src: https://github.com/ahmetb/kubectx/releases/download/{{ kubectx_version }}/kubectx_{{ kubectx_version }}_linux_x86_64.tar.gz
+        dest: /usr/local/bin
+        remote_src: true
+
+    - name: Install kubens
+      become: true
+      ansible.builtin.unarchive:
+        src: https://github.com/ahmetb/kubectx/releases/download/{{ kubens_version }}/kubens_{{ kubens_version }}_linux_x86_64.tar.gz
+        dest: /usr/local/bin
+        remote_src: true
+
+    - name: Install cmctl
+      become: true
+      ansible.builtin.unarchive:
+        src: https://github.com/cert-manager/cert-manager/releases/download/{{ cmctl_version }}/cmctl-linux-amd64.tar.gz
+        dest: /usr/local/bin
+        remote_src: true
+
+    - name: Copy bash aliases
+      ansible.builtin.copy:
+        src: ./files/.bash_aliases
+        dest: /home/idt/.bash_aliases
+        owner: idt
+        group: idt
+        mode: "0600"
+
+    - name: Set a hostname
+      become: true
+      ansible.builtin.hostname:
+        # could be useful to avoid mistakes, as it will be use in the PS1
+        name: "{{ bastion_hostname }}"
+        use: systemd

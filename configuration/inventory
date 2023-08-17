@@ -1,0 +1,20 @@
+[bastion:vars]
+ansible_python_interpreter=/usr/bin/python3
+ansible_ssh_private_key_file=~/.ssh/id_ed25519
+
+[bastion]
+idt-bastion ansible_host='{{ idt_bastion_ip_address }}' ansible_user=idt ansible_sudo_pass='{{ idt_bastion_become_pass }}'
+
+[kubernetes]
+rancher01 k3s_control_node=true ansible_host='{{ k3s_master_01_ip_address }}' ansible_user=idt ansible_sudo_pass='{{ k3s_master_01_become_pass }}'
+rancher02 k3s_control_node=true ansible_host='{{ k3s_master_02_ip_address }}' ansible_user=idt ansible_sudo_pass='{{ k3s_master_02_become_pass }}'
+rancher03 k3s_control_node=true ansible_host='{{ k3s_master_03_ip_address }}' ansible_user=idt ansible_sudo_pass='{{ k3s_master_03_become_pass }}'
+
+[databases]
+postgresql01 ansible_host='{{ database_01_ip_address }}' ansible_user=idt ansible_sudo_pass='{{ database_01_become_pass }}'
+postgresql02 ansible_host='{{ database_02_ip_address }}' ansible_user=idt ansible_sudo_pass='{{ database_02_become_pass }}'
+
+# This is a virtual node, we don't use directly, only to be copied to
+# databases hosts. This way we can access pgpool virtual IP with pgpool host.
+[pool]
+pgpool ansible_host='{{ pgpool_ip_address }}'

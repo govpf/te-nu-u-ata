@@ -1,0 +1,13 @@
+- name: Install K3s
+  hosts: kubernetes
+  vars_files:
+    - vars/k3s.yml
+  vars:
+    k3s_release_version: "{{ k3s_version }}"
+    k3s_become: true
+    k3s_server:
+      datastore-endpoint: "postgres://{{ database_user }}:{{ database_password }}@{{ database_host }}:{{ database_port }}/{{ database_name }}?sslmode=disable"
+      disable:
+        - traefik
+  roles:
+    - role: ansible-role-k3s

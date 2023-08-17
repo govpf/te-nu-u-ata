@@ -1,0 +1,27 @@
+---
+pgpool:
+  hosts:
+    pgpool01:
+      index: 1
+      ansible_user: idt
+      ansible_host: 51.255.159.38
+      ansible_sudo_pass: "{{ database_01_become_pass }}"
+      pgpool_wd_hostname: postgresql01
+      pgpool_wd_priority: 1
+      # watchdog
+      pgpool_heartbeat_destination:
+        - hostname: postgresql02
+      pgpool_other_settings:
+        - hostname: postgresql02
+    pgpool02:
+      index: 2
+      ansible_user: idt
+      ansible_host: 51.255.159.39
+      ansible_sudo_pass: "{{ database_02_become_pass }}"
+      pgpool_wd_hostname: postgresql02
+      pgpool_wd_priority: 2
+      # watchdog
+      pgpool_heartbeat_destination:
+        - hostname: postgresql01
+      pgpool_other_settings:
+        - hostname: postgresql01

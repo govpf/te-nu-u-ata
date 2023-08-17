@@ -1,0 +1,19 @@
+---
+bastion_hostname: idt-bastion
+cluster_issuer_files: ["issuer.staging.yml", "issuer.production.yml"]
+cmctl_version: v1.7.0 # can’t use version beyond this one (error: exec plugin: invalid apiVersion "client.authentication.k8s.io/v1alpha1")
+helm_diff_url: https://github.com/databus23/helm-diff
+helm_gpg_path: /usr/share/keyrings/helm.gpg
+kubeconfig_path: /home/idt/.kube/config
+# at the moment we created the cluster, it was using 1.25. kubectl should stick in a -1..+1 range with the api server
+# https://kubernetes.io/fr/docs/tasks/tools/install-kubectl/
+kubectl_version: v1.26.6
+kubectx_version: v0.9.4
+kubens_version: v0.9.4
+# I prefer to be explicit instead of installing everything that could be present in the directory
+manifests_files: [""]
+manifests_path: /home/idt/k8s/manifests
+rancher_boostrap_password: admin
+rancher_hostname: rancher.md.idt.pf
+rancher_lets_encrypt_email: martin.catty@ouidou.fr
+rancher_version: 2.7.5

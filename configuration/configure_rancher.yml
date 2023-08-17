@@ -1,0 +1,70 @@
+- name: Install rancher
+  hosts: bastion
+  vars_files:
+    - vars/bastion.yml
+  tasks:
+    - name: Install cert manager
+      kubernetes.core.helm:
+        release_name: cert-manager
+        chart_ref: "jetstack/cert-manager"
+        # chart_version: 1.10.1
+        chart_version: 1.12.2
+        release_namespace: cert-manager
+        create_namespace: true
+        values:
+          installCRDs: true
+
+    - name: Create Nginx Ingress Controller deployment
+      kubernetes.core.helm:
+        release_name: nginx-ingress
+        chart_ref: "stable/ingress-nginx"
+        # chart_version: 4.2.3
+        chart_version: 4.7.1
+        release_namespace: ingress-nginx
+        create_namespace: true
+        release_state: present
+        values:
+          controller:
+            watchIngressWithoutClass: true
+            service:
+              create: true
+              type: LoadBalancer
+          ingressClassResource:
+            default: true
+
+    - name: Create temporary directory for cluster issuer
+      ansible.builtin.tempfile:
+        state: directory
+        prefix: clusterissuer.
+      register: cluster_issuer
+
+    - name: Copy cluster issuer configuration
+      ansible.builtin.copy:
+        src: "config/{{ item }}"
+        dest: "{{ cluster_issuer.path }}"
+        mode: 0600
+      loop: "{{ cluster_issuer_files }}"
+
+    - name: Create a Deployment by reading the definition from a local file
+      kubernetes.core.k8s:
+        state: present
+        src: "{{ cluster_issuer.path }}/{{ item }}"
+      loop: "{{ cluster_issuer_files }}"
+
+    # - name: Install Rancher
+    #   kubernetes.core.helm:
+    #     release_name: rancher
+    #     chart_ref: "rancher-stable/rancher"
+    #     chart_version: "{{ rancher_version }}"
+    #     release_namespace: cattle-system
+    #     create_namespace: true
+    #     values:
+    #       hostname: "{{ rancher_hostname }}"
+    #       bootstrapPassword: "{{ rancher_boostrap_password }}"
+    #       ingress:
+    #         tls:
+    #           source: letsEncrypt
+    #       letsEncrypt:
+    #         email: "{{ rancher_lets_encrypt_email }}"
+    #         ingress:
+    #           class: nginx

@@ -1,0 +1,9 @@
+- name: Install pgpool II
+  hosts: pgpool
+  gather_facts: true
+  become: true
+  vars_files:
+    - vars/pgpool.yml
+
+  roles:
+    - role: ansible-role-pgpool

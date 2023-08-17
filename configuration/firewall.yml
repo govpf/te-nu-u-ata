@@ -1,0 +1,38 @@
+- name: Firewall
+  become: true
+  hosts: "{{ hostlist | default('all') }}"
+  tasks:
+    - name: Install ufw
+      become: true
+      ansible.builtin.apt:
+        pkg:
+          - ufw
+      # avoid virtual host
+      when: hostvars[item].ansible_user is defined
+      with_items: "{{ groups.all }}"
+
+    - name: Allow everything and enable UFW
+      community.general.ufw:
+        state: enabled
+        policy: allow
+
+    - name: "Allow SSH for every host"
+      community.general.ufw:
+        rule: allow
+        name: OpenSSH
+      when: hostvars[item].ansible_user is defined
+      with_items: "{{ groups.all }}"
+
+    - name: Deny every incoming connection but SSH
+      ufw:
+        rule: deny
+        proto: tcp
+        direction: in
+        port: '1:21,23:65535'
+
+    - name: Block outgoing SMTP connections
+      ufw:
+        rule: deny
+        proto: any
+        direction: out
+        port: '25'

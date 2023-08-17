@@ -1,0 +1,79 @@
+# Force PG 15, default is 13 for bullseye
+# It should have already been installed by postgresql playbook
+postgresql_version: "15"
+postgresql_data_dir: "/var/lib/postgresql/15/main"
+postgresql_bin_path: "/usr/lib/postgresql/15/bin"
+postgresql_config_path: "/etc/postgresql/15/main"
+postgresql_daemon: "postgresql@15-main"
+# log when a problem occured while creating user
+postgres_users_no_log: false
+
+postgresql_databases:
+  - name: k3s_production
+  - name: ds_production
+postgresql_users:
+  - name: k3s
+    password: v9smN3iWpDtwb6eJbBcJ
+  - name: ds
+    password: WFZsWYqBE7jsXcNW4ibZ
+
+postgresql_global_config_options:
+  - option: listen_addresses
+    value: "*"
+    # log_directory must be defined if we had some other options
+  - option: log_directory
+    value: "log"
+
+postgresql_hba_entries:
+  - { type: local, database: all, user: postgres, auth_method: trust }
+  - {
+      type: host,
+      database: all,
+      user: postgres,
+      address: "51.255.159.32/28",
+      auth_method: trust,
+    }
+  - {
+      type: local,
+      database: k3s_production,
+      user: k3s,
+      auth_method: scram-sha-256,
+    }
+  - {
+      type: local,
+      database: ds_production,
+      user: ds,
+      auth_method: scram-sha-256,
+    }
+  - {
+      type: host,
+      database: k3s_production,
+      user: k3s,
+      address: "127.0.0.1/32",
+      auth_method: scram-sha-256,
+    }
+  - {
+      type: host,
+      database: ds_production,
+      user: ds,
+      address: "127.0.0.1/32",
+      auth_method: scram-sha-256,
+    }
+  # below are access from vsphere pool
+  - {
+      type: host,
+      database: k3s_production,
+      user: k3s,
+      address: "51.255.159.32/28",
+      auth_method: scram-sha-256,
+    }
+  - {
+      type: host,
+      database: ds_production,
+      user: ds,
+      address: "51.255.159.32/28",
+      auth_method: scram-sha-256,
+    }
+postgresql_locales:
+  - "en_US.UTF-8"
+  - "fr_FR.UTF-8"

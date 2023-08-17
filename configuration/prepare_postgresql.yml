@@ -1,0 +1,35 @@
+- name: Mesh k3s
+  ansible.builtin.import_playbook: mesh.yml
+  vars:
+    hostlist: databases
+
+- name: Install postgresql and pg tools
+  become: true
+  hosts: databases
+  tasks:
+    - name: Add pg key
+      ansible.builtin.apt_key:
+        url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+        state: present
+
+    - name: Install pgpool repo
+      ansible.builtin.apt_repository:
+        repo: deb http://apt.postgresql.org/pub/repos/apt bullseye-pgdg main
+        state: present
+        update_cache: true
+
+    - name: Install base packages
+      ansible.builtin.apt:
+        pkg:
+          # acl nécessaire pour la gestion du sticky bit (postgres)
+          - acl
+          - curl
+          - git
+          - htop
+          - libpgpool0=4.1.4-3
+          - libpgpool2
+          # playbook has been tested for 4.1
+          - pgpool2=4.1.4-3
+          - postgresql-15-pgpool2
+          - vim
+        update_cache: true

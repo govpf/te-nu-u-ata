@@ -1,0 +1,9 @@
+- name: Configure databases
+  become: true
+  hosts: databases
+  vars_files:
+    - variables.yml
+    - vars/databases.yml
+
+  roles:
+    - role: geerlingguy.postgresql

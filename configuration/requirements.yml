@@ -1,0 +1,18 @@
+---
+roles:
+  - name: rancher-k3s
+    src: git@github.com:k3s-io/k3s-ansible.git
+    version: ansible-galaxy
+    scm: git
+
+  - name: ansible-role-k3s
+    src: git@github.com:PyratLabs/ansible-role-k3s.git
+    version: main
+    scm: git
+
+  - name: geerlingguy.postgresql
+
+  - name: ansible-role-pgpool
+    src: git@github.com:fidanf/ansible-role-pgpool.git
+    version: v1.3.0
+    scm: git

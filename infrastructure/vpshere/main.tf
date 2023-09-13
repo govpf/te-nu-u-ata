@@ -29,13 +29,13 @@ data "vsphere_content_library" "ovh_library" {
 
 # Data source for vCenter Content Library Item
 data "vsphere_content_library_item" "debian_12" {
-  name       = "Debian 12.0.0 amd64 (customizable with OVF properties)"
+  name       = var.debian_12
   type       = "ovf"
   library_id = data.vsphere_content_library.ovh_library.id
 }
 
 data "vsphere_content_library_item" "debian_11" {
-  name       = "Debian 11.7.0 amd64 (customizable with OVF properties)"
+  name       = var.debian_11
   type       = "ovf"
   library_id = data.vsphere_content_library.ovh_library.id
 }

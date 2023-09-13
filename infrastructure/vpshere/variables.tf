@@ -28,6 +28,18 @@ variable "network" {
   default     = "VM Network"
 }
 
+variable "debian_12" {
+  description = "Linux distribution to use"
+  type        = string
+  default     = "Debian 12.1.0 amd64 (customizable with OVF properties)"
+}
+
+variable "debian_11" {
+  description = "Linux distribution to use"
+  type        = string
+  default     = "Debian 11.7.0 amd64 (customizable with OVF properties)"
+}
+
 variable "vms_rancher" {
   description = "Object representing Rancher VMS"
   type = set(object({

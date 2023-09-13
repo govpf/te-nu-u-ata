@@ -74,7 +74,7 @@ resource "vsphere_virtual_machine" "rancher" {
 
 resource "vsphere_virtual_machine" "bastion" {
   # iterate on something like this { name: object }
-  for_each = { for index, vm in var.vms_rancher : vm.name => vm }
+  for_each = { for index, vm in var.vms_bastion : vm.name => vm }
   name     = each.value.name
 
   resource_pool_id = data.vsphere_compute_cluster.cluster.resource_pool_id

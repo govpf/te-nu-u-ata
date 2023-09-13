@@ -70,6 +70,14 @@ resource "vsphere_virtual_machine" "rancher" {
   vapp {
     properties = merge(var.vm_default_properties, each.value.properties)
   }
+
+  # Ignore change regarding template_uuid. For instance if we use debian 12
+  # and want to use debian 12.1 at some point we don’t want to destroy existing VM
+  lifecycle {
+    ignore_changes = [
+      clone,
+    ]
+  }
 }
 
 resource "vsphere_virtual_machine" "bastion" {
@@ -102,6 +110,12 @@ resource "vsphere_virtual_machine" "bastion" {
   vapp {
     properties = merge(var.vm_default_properties, each.value.properties)
   }
+
+  lifecycle {
+    ignore_changes = [
+      clone,
+    ]
+  }
 }
 
 resource "vsphere_virtual_machine" "database" {
@@ -133,5 +147,11 @@ resource "vsphere_virtual_machine" "database" {
 
   vapp {
     properties = merge(var.vm_default_properties, each.value.properties)
+  }
+
+  lifecycle {
+    ignore_changes = [
+      clone,
+    ]
   }
 }

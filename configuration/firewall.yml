@@ -23,15 +23,20 @@
       when: hostvars[item].ansible_user is defined
       with_items: "{{ groups.all }}"
 
+    - name: Allow full access between VM (pgpool…)
+      community.general.ufw:
+        rule: allow
+        src: 51.255.159.32/28
+
     - name: Deny every incoming connection but SSH
-      ufw:
+      community.general.ufw:
         rule: deny
         proto: tcp
         direction: in
         port: '1:21,23:65535'
 
     - name: Block outgoing SMTP connections
-      ufw:
+      community.general.ufw:
         rule: deny
         proto: any
         direction: out

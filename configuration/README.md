@@ -50,6 +50,12 @@ puis :
 ansible-playbook -i inventory configure_postgresql.yml --vault-password-file=~/ansible_vault_idt -e@./credentials.yml
 ```
 
+Sur les machines concernées on peut vérifier qu’on peut se connecter :
+
+```
+psql -h localhost -U k3s k3s_production
+```
+
 ### PG Pool II
 
 On lance le playbook de préparation qui va s'occuper de copier les fichiers nécessaires :
@@ -63,6 +69,9 @@ Puis on lance le playbook de configuration :
 ```bash
 ansible-playbook -i inventory_pg_pool.yml configure_pgpool.yml --vault-password-file=~/ansible_vault_idt -e@./credentials.yml
 ```
+
+La configuration du pgpool se trouve dans `/etc/pgpool2/pgpool.conf`.
+Les logs dans `/var/log/pgpool/pgpool.log`.
 
 Pour vérifier que tout fonctionne bien, on se connecte avec pgpool.
 
@@ -226,6 +235,3 @@ systemctl restart postgresql@15-main.service
 psql -h postgresql02 -U k3s k3s_production
 
 psql -p 9999 -h pgpool -U k3s k3s_production
-
-
-v9smN3iWpDtwb6eJbBcJ

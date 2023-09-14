@@ -1,0 +1,23 @@
+- name: Hardening
+  become: true
+  hosts: "{{ hostlist | default('all') }}"
+  tasks:
+    - name: Upload hardened sshd_config file
+      ansible.builtin.copy:
+        src: files/sshd_config
+        dest: /etc/ssh/sshd_config
+        follow: true
+        owner: root
+        group: root
+        mode: "0644"
+      when: hostvars[item].ansible_user is defined
+      with_items: "{{ groups.all }}"
+      notify:
+        - restart_ssh
+
+  handlers:
+    - name: restart_ssh
+      ansible.builtin.service:
+        name: sshd
+        state: restarted
+        enabled: true

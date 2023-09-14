@@ -14,7 +14,7 @@ rancher03 k3s_control_node=true ansible_host='{{ k3s_master_03_ip_address }}' an
 postgresql01 ansible_host='{{ database_01_ip_address }}' ansible_user=idt ansible_sudo_pass='{{ database_01_become_pass }}'
 postgresql02 ansible_host='{{ database_02_ip_address }}' ansible_user=idt ansible_sudo_pass='{{ database_02_become_pass }}'
 
-# This is a virtual node, we don't use directly, only to be copied to
-# databases hosts. This way we can access pgpool virtual IP with pgpool host.
-[pool]
-pgpool ansible_host='{{ pgpool_ip_address }}'
+[workers]
+worker01 k3s_worker=true ansible_host='{{ k3s_worker_01_ip_address }}' ansible_user=idt ansible_sudo_pass='{{ k3s_worker_01_become_pass }}'
+worker02 k3s_worker=true ansible_host='{{ k3s_worker_02_ip_address }}' ansible_user=idt ansible_sudo_pass='{{ k3s_worker_02_become_pass }}'
+worker03 k3s_worker=true ansible_host='{{ k3s_worker_03_ip_address }}' ansible_user=idt ansible_sudo_pass='{{ k3s_worker_03_become_pass }}'

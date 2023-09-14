@@ -1,4 +1,4 @@
-database_host: pgpool
+database_host: postgresql01
 database_name: k3s_production
 database_password: v9smN3iWpDtwb6eJbBcJ
 database_port: 9999

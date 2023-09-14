@@ -1,0 +1,17 @@
+- name: Prepare workers
+  ansible.builtin.import_playbook: mesh.yml
+  vars:
+    hostlist: workers
+
+- name: Install packages
+  hosts: workers
+  tasks:
+    - name: Install base packages
+      become: true
+      ansible.builtin.apt:
+        pkg:
+          - curl
+          - git
+          - htop
+          - vim
+        update_cache: true

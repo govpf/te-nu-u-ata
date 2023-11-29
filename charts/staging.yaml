@@ -1,0 +1,145 @@
+app:
+  domainName: staging.mes-demarches.ovh
+  image: govpf/mes-demarches:masterpf
+  replicaCount: 1
+  extraEnv:
+    ACTIVE_STORAGE_SERVICE: s3
+    AGENT_CONNECT_BASE_URL:
+    AGENT_CONNECT_ENABLED:
+    AGENT_CONNECT_ID:
+    AGENT_CONNECT_JWKS:
+    AGENT_CONNECT_REDIRECT:
+    AGENT_CONNECT_SECRET:
+    API_ADRESSE_URL: https://api-adresse.data.gouv.fr
+    API_COJO_URL: https://mul-exp-custom-api-ppr.api-dev.paris2024.org
+    API_CPS_AUTH: https://connect.cps.pf/auth/realms/TatouAssures/protocol/openid-connect/token
+    API_CPS_CLIENT_ID: mes-demarches
+    API_CPS_URL: https://tatouapi.cps.pf
+    API_CPS_USERNAME: sipf-ext
+    API_EDUCATION_URL: https://data.education.gouv.fr/api/records/1.0
+    API_ENTREPRISE_DEFAULT_SIRET: 13000582000019
+    API_ENTREPRISE_PF_AUTH: https://auth.gov.pf/auth/realms/Itaiete/protocol/openid-connect/token
+    API_ENTREPRISE_PF_URL: https://api.i-taiete.gov.pf/api/v2
+    API_GEO_URL: https://geo.api.gouv.fr
+    API_ISPF_USER: MES-DEMARCHES
+    APPLICATION_BASE_URL: https://www.mes-demarches.gov.pf
+    APPLICATION_NAME: Mes-Démarches
+    APPLICATION_SHORTNAME: MD
+    BRANCH: devpf
+    CLAMAV_ENABLED: enabled
+    COJO_JWT_ISS:
+    CRISP_ENABLED: enabled
+    DELAYED_JOB_ARGS: -pool=*:10
+    DEMANDE_INSCRIPTION_ADMIN_PAGE_URL: https://www.mes-demarches.gov.pf/commencer/dmra-devenir-administrateur-de-demarches-en-ligne
+    DB_PORT: 9999
+    DOC_URL: https://mes-demarches.gitbook.io/documentation
+    DS_PROXY_URL:
+    ENV: production
+    FAVICON_16PX_SRC: favicons/pf16x16.png
+    FAVICON_32PX_SRC: favicons/pf32x32.png
+    FAVICON_96PX_SRC: favicons/pf96x96.png
+    HELPSCOUT_MAILBOX_ID: 173351
+    IMAGE: govpf/mes-demarches
+    LANDING_TESTIMONIALS_ENABLED: enabled
+    LANDING_USERS_ENABLED: enabled
+    LEGIT_ADMIN_DOMAINS: gov.pf
+    LOGRAGE: enabled
+    MAILCATCHER_ENABLED: disabled
+    MAILCATCHER_HOST:
+    MAILCATCHER_PORT:
+    MAILER_LOGO_SRC: header/logo-md-wide.png
+    MAILTRAP_ENABLED: disabled
+    MAILTRAP_USERNAME:
+    MATOMO_COOKIE_DOMAIN: "*.mes-demarches.gov.pf"
+    MATOMO_DOMAIN: "*.mes-demarches.gov.pf"
+    MATOMO_ENABLED: enabled
+    MATOMO_HOST: https://beta.mes-demarches.gov.pf/matomo
+    MATOMO_ID: 1
+    MATOMO_IFRAME_URL: https://beta.mes-demarches.gov.pf/matomo/index.php?module=CoreAdminHome&action=optOut&language=fr&backgroundColor=ffffff&fontColor=333333&fontSize=16px&fontFamily=Muli
+    NETWORK_SLOT: 1
+    PORT: 3000
+    PROCEDURE_DEFAULT_LOGO_SRC: polynesie.png
+    RAILS_ENV: production
+    ROOT: /opt/tps
+    S3_BUCKET: mes-demarches-beta
+    S3_ENDPOINT: https://oos.cloudgouv-eu-west-1.outscale.com
+    S3_REGION: cloudgouv-eu-west-1
+    SAML_IDP_ENABLED: enabled
+    SENDINBLUE_BALANCING_VALUE: 100
+    SENDINBLUE_BALANCING:
+    SENDINBLUE_ENABLED: enabled
+    SENDINBLUE_LOGIN_URL: https://app.sendinblue.com/account/login
+    SENDINBLUE_USER_NAME: honouira@administration.gov.pf
+    SENTRY_CURRENT_ENV: staging
+    SENTRY_ENABLED: enabled
+    TAG: devpf
+    TATOU_BASE_URL: https://connect.cps.pf/auth/realms/TatouAssures
+    TATOU_CLIENT_ID: mes-aides-pf
+    UNIVERSIGN_API_URL: https://sign.test.cryptolog.com/tsa/post/
+    UNIVERSIGN_USERPWD: matthieu.bosc@informatique.gov.pf:FBH2LCCE
+    WATERMARK_FILE: watermark_pf.png
+
+  extraSecretEnv:
+    - fromSecret:
+        name: database
+        data:
+          DB_DATABASE: database
+          DB_HOST: host
+          DB_PASSWORD: password
+          DB_USERNAME: username
+    - fromSecret:
+        name: gravitee
+        data:
+          API_ISPF_URL: url
+          API_ISPF_GRAVITEE_KEY: key
+    - fromSecret:
+        name: app
+        data:
+          API_CPS_CLIENT_SECRET: api_cps_client_secret
+          API_CPS_PASSWORD: api_cps_password
+          API_ISPF_PASSWORD: api_ispf_password
+          AR_ENCRYPTION_KEY_DERIVATION_SALT: ar_encryption_key_derivation_salt
+          AR_ENCRYPTION_PRIMARY_KEY: ar_encryption_primary_key
+          COJO_JWT_RSA_PRIVATE_KEY: cojo_jwt_rsa_private_key
+          CRISP_CLIENT_KEY: crisp_client_key
+          ENCRYPTION_SERVICE_SALT: encryption_service_salt
+          FC_PARTICULIER_BASE_URL: fc_particulier_base_url
+          FC_PARTICULIER_ID: fc_particulier_id
+          FC_PARTICULIER_SECRET: fc_particulier_secret
+          GITHUB_CLIENT_ID: github_client_id
+          GITHUB_CLIENT_SECRET: github_client_secret
+          GOOGLE_CLIENT_ID: google_client_id
+          GOOGLE_CLIENT_SECRET: google_client_secret
+          HELPSCOUT_CLIENT_ID: helpscout_client_id
+          HELPSCOUT_CLIENT_SECRET: helpscout_client_secret
+          HELPSCOUT_WEBHOOK_SECRET: helpscout_webhook_secret
+          INVISIBLE_CAPTCHA_SECRET: invisible_captcha_secret
+          MAILTRAP_PASSWORD: mailtrap_password
+          MICROSOFT_CLIENT_ID: microsoft_client_id
+          MICROSOFT_CLIENT_SECRET: microsoft_client_secret
+          OTP_SECRET_KEY: otp_secret_key
+          S3_ACCESS_KEY: s3_access_key
+          S3_SECRET_KEY: s3_secret_key
+          SENDINBLUE_API_V3_KEY: sendinblue_api_v3_key
+          SENDINBLUE_CLIENT_KEY: sendinblue_client_key
+          SENDINBLUE_SMTP_KEY: sendinblue_smtp_key
+          SENTRY_DSN_JS: sentry_dsn_js
+          SENTRY_DSN_RAILS: sentry_dsn_rails
+          TATOU_CLIENT_SECRET: tatou_client_secret
+
+  releaseTasks:
+    - name: db-migrate
+      command: ["/bin/bash"]
+      weight: "-4"
+      steps: "pre-install,pre-upgrade"
+      args:
+        - "-c"
+        - "bundle exec rake db:migrate"
+      extraEnv: []
+
+jobs:
+  replicaCount: 2
+
+ingress:
+  tls:
+    secretName: mes-demarches-staging-tls

@@ -1,0 +1,79 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "jobs.fullname" . }}
+  labels:
+    app: {{ template "jobs.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: {{ .Values.app.type }}
+  ports:
+    - port: {{ .Values.app.externalPort }}
+      targetPort: {{ .Values.app.internalPort }}
+      protocol: TCP
+      name: {{ .Values.app.name }}
+  selector:
+    app: {{ template "jobs.name" . }}
+    release: {{ .Release.Name }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "jobs.fullname" . }}
+  labels:
+    app: {{ template "jobs.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ template "jobs.name" . }}
+      release: {{ .Release.Name }}
+  replicas: {{ .Values.jobs.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "jobs.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+      - name: {{ template "release.identifier" . }}
+        image: {{ .Values.app.image }}
+        imagePullPolicy: {{ .Values.app.pullPolicy }}
+        command: ['/bin/bash', '-c', "{{ .Values.jobs.command }}"]
+        env:
+          - name: DEPLOY_TIMESTAMP
+            value: "{{ now | date "20060102150405" }}"
+        {{- range $key, $value := .Values.app.extraEnv }}
+          - name: "{{ $key }}"
+            value: "{{ $value }}"
+        {{- end }}
+        {{- range $secret := .Values.app.extraSecretEnv }}
+          {{- range $key, $value := $secret.fromSecret.data }}
+          - name: {{ $key }}
+            valueFrom:
+              secretKeyRef:
+                  name: {{ $secret.fromSecret.name | quote }}
+                  key: {{ $value | quote }}
+          {{- end }}
+        {{- end }}
+        ports:
+          - containerPort: {{ .Values.app.internalPort }}
+        resources:
+{{ toYaml .Values.app.resources | indent 12 }}
+    {{- if .Values.app.imagePullSecret }}
+      imagePullSecrets:
+      - name: {{ .Values.app.imagePullSecret }}
+    {{- end }}
+    {{- if .Values.app.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.app.nodeSelector | indent 8 }}
+    {{- end }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 50%

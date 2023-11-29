@@ -1,0 +1,96 @@
+{{- $app := .Values.app }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "app.fullname" . }}
+  labels:
+    app: {{ template "app.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: {{ $app.type }}
+  ports:
+    - port: {{ $app.externalPort }}
+      targetPort: {{ $app.internalPort }}
+      protocol: TCP
+      name: {{ $app.name }}
+  selector:
+    app: {{ template "app.name" . }}
+    release: {{ .Release.Name }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "app.fullname" . }}
+  labels:
+    app: {{ template "app.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ template "app.name" . }}
+      release: {{ .Release.Name }}
+  replicas: {{ $app.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "app.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+      - name: {{ template "release.identifier" . }}
+        image: {{ $app.image }}
+        imagePullPolicy: {{ $app.pullPolicy }}
+        # readinessProbe:
+        #   httpGet:
+        #     path: /elb_check
+        #     port: {{ $app.internalPort }}
+        #   failureThreshold: 3
+        #   initialDelaySeconds: 3
+        #   periodSeconds: 5
+        #   successThreshold: 3
+        # livenessProbe:
+        #   httpGet:
+        #     path: /elb_check
+        #     port: {{ $app.internalPort }}
+        #   failureThreshold: 1
+        #   initialDelaySeconds: 10
+        #   periodSeconds: 5
+        #   timeoutSeconds: 1
+        env:
+          - name: DEPLOY_TIMESTAMP
+            value: "{{ now | date "20060102150405" }}"
+        {{- range $key, $value := $app.extraEnv }}
+          - name: "{{ $key }}"
+            value: "{{ $value }}"
+        {{- end }}
+        {{- range $secret := $app.extraSecretEnv }}
+          {{- range $key, $value := $secret.fromSecret.data }}
+          - name: {{ $key }}
+            valueFrom:
+              secretKeyRef:
+                  name: {{ $secret.fromSecret.name | quote }}
+                  key: {{ $value | quote }}
+          {{- end }}
+        {{- end }}
+        ports:
+        - containerPort: {{ $app.internalPort }}
+        resources:
+{{ toYaml $app.resources | indent 12 }}
+    {{- if $app.imagePullSecret }}
+      imagePullSecrets:
+        - name: {{ $app.imagePullSecret }}
+    {{- end }}
+    {{- if $app.nodeSelector }}
+      nodeSelector:
+{{ toYaml $app.nodeSelector | indent 8 }}
+    {{- end }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 50%

@@ -1,0 +1,25 @@
+app:
+  name: app
+  pullPolicy: Always
+  replicaCount: 1
+  type: ClusterIP
+  externalPort: 80
+  internalPort: 3000
+  imagePullSecret: ecr
+  resources: {}
+  extraEnv: {}
+  extraSecretEnv: []
+  pathType: Prefix
+ingress:
+  annotations:
+    acme.cert-manager.io/http01-edit-in-place: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-production
+    cert-manager.io/issue-temporary-certificate: "true"
+    kubernetes.io/tls-acme: "true"
+    ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+jobs:
+  command: "rake jobs:work"
+  replicaCount: 1

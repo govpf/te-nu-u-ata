@@ -1,0 +1,62 @@
+{{- $chart_name := .Chart.Name }}
+{{- $chart_version := .Chart.Version | replace "+" "_" }}
+{{- $release_name := .Release.Name }}
+{{- $release_service := .Release.Service }}
+{{- $app := .Values.app }}
+
+{{- range $job := $app.releaseTasks }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ printf "%s-%s" $release_name $job.name | trunc 63 | trimSuffix "-" }}
+  labels:
+    chart: "{{ $chart_name }}-{{ $chart_version }}"
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": {{ $job.steps | default "pre-install,pre-upgrade" | quote }}
+    "helm.sh/hook-weight": {{ $job.weight | quote }}
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    metadata:
+      name: "{{ $release_name }}"
+      labels:
+        app.kubernetes.io/managed-by: {{ $release_service | quote }}
+        app.kubernetes.io/instance: {{ $release_name | quote }}
+        helm.sh/chart: "{{ $chart_name }}-{{ $chart_version }}"
+    spec:
+      imagePullSecrets:
+        - name: {{ $app.imagePullSecret }}
+      restartPolicy: Never
+      containers:
+      - name: {{ $job.name }}
+        image: {{ $app.image }}
+        imagePullPolicy: {{ $app.pullPolicy }}
+        {{- if $job.command }}
+        command: {{ $job.command }}
+        {{- end }}
+        {{- with $job.args }}
+        args:
+{{ toYaml . | indent 12 }}
+          {{- end }}
+        env:
+        {{- range $key, $value := $app.extraEnv }}
+          - name: "{{ $key }}"
+            value: "{{ $value }}"
+        {{- end }}
+        {{- range $key, $value := $job.extraEnv }}
+          - name: "{{ $key }}"
+            value: "{{ $value }}"
+        {{- end }}
+        {{- range $secret := $app.extraSecretEnv }}
+          {{- range $key, $value := $secret.fromSecret.data }}
+          - name: {{ $key }}
+            valueFrom:
+              secretKeyRef:
+                  name: {{ $secret.fromSecret.name | quote }}
+                  key: {{ $value | quote }}
+          {{- end }}
+        {{- end }}
+{{- end }}

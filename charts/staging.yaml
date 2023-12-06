@@ -19,6 +19,7 @@ app:
     API_EDUCATION_URL: https://data.education.gouv.fr/api/records/1.0
     API_ENTREPRISE_DEFAULT_SIRET: 13000582000019
     API_GEO_URL: https://geo.api.gouv.fr
+    APP_HOST: staging.mes-demarches.ovh
     APPLICATION_BASE_URL: https://www.mes-demarches.gov.pf
     APPLICATION_NAME: Mes-Démarches
     APPLICATION_SHORTNAME: MD
